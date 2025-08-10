@@ -1,6 +1,7 @@
 /**
  * Calcula el factorial de un número
  */
+
 function factorial(n) {
     if (n < 0) {
         throw new Error('El factorial no está definido para números negativos');
@@ -8,10 +9,9 @@ function factorial(n) {
     if (n === 0 || n === 1) {
         return 1;
     }
-    // BUG INTENCIONAL: Cambiamos la multiplicación por suma
-    return n + factorial(n - 1);  // Debería ser: n * factorial(n - 1)
+    // CORREGIDO: Volvemos a usar multiplicación correcta
+    return n * factorial(n - 1);  // Corregido de suma a multiplicación
 }
-
 
 /**
  * Calcula el n-ésimo número de la secuencia de Fibonacci
