@@ -1,13 +1,183 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Despliegue Contino</title>
+    <title>Perfil — Notas & Estadística</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f7fa;
+            color: #2c3e50;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.2em;
+            font-weight: 300;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .profile-section {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .profile-info {
+            margin-bottom: 15px;
+        }
+        
+        .profile-info strong {
+            color: #2c3e50;
+            display: inline-block;
+            width: 120px;
+        }
+        
+        .description {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            border: 1px solid #e0e6ed;
+        }
+        
+        .grades-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .grades-table th {
+            background: #667eea;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 500;
+        }
+        
+        .grades-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e6ed;
+        }
+        
+        .grades-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .grades-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .grade {
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .grade.excellent { background: #d4edda; color: #155724; }
+        .grade.good { background: #cce5ff; color: #004085; }
+        .grade.average { background: #fff3cd; color: #856404; }
+    </style>
 </head>
 <body>
-    <h1>!Sitio Estatico!</h1>
-    <p id="out"></p>
+    <div class="container">
+        <div class="header">
+            <h1>Perfil — Notas & Estadística</h1>
+        </div>
+        
+        <div class="content">
+            <div class="profile-section">
+                <div class="profile-info">
+                    <strong>Nombre:</strong> Elkin Andres Pabon Gonzalez
+                </div>
+                <div class="profile-info">
+                    <strong>NRC:</strong> 22431
+                </div>
+                <div class="profile-info">
+                    <strong>Correo:</strong> eapabon@espe.edu.ec
+                </div>
+            </div>
+            
+            <div class="description">
+                <h3>Presentación</h3>
+                <p>
+                    Soy estudiante de Ingeniería de Sistemas con pasión por el desarrollo de software y las pruebas automatizadas. 
+                    Me interesa especialmente la implementación de metodologías ágiles y la mejora continua de procesos. 
+                    Actualmente enfocado en aprender sobre CI/CD y despliegue automatizado. 
+                    Siempre busco nuevos desafíos que me permitan crecer profesionalmente.
+                </p>
+            </div>
+            
+            <div>
+                <h3>Calificaciones del Semestre</h3>
+                <table class="grades-table">
+                    <thead>
+                        <tr>
+                            <th>Asignatura</th>
+                            <th>Código</th>
+                            <th>Créditos</th>
+                            <th>Calificación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Pruebas de Software</td>
+                            <td>3503</td>
+                            <td>3</td>
+                            <td><span class="grade excellent">4.5</span></td>
+                        </tr>
+                        <tr>
+                            <td>Desarrollo Web</td>
+                            <td>3710</td>
+                            <td>3</td>
+                            <td><span class="grade good">4.2</span></td>
+                        </tr>
+                        <tr>
+                            <td>Base de Datos</td>
+                            <td>2304</td>
+                            <td>4</td>
+                            <td><span class="grade good">4.0</span></td>
+                        </tr>
+                        <tr>
+                            <td>Estructura de Datos</td>
+                            <td>4208</td>
+                            <td>3</td>
+                            <td><span class="grade average">3.8</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
     <script src="app.js"></script>
 </body>
 </html>
