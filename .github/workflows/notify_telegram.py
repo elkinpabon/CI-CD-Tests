@@ -5,17 +5,6 @@ import os
 import sys
 import requests
 from datetime import datetime
-import re
-
-def escape_markdown(text):
-    """Escape special markdown characters for Telegram MarkdownV2"""
-    if not text:
-        return ""
-    # All characters that need escaping in MarkdownV2
-    special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!', '\\']
-    for char in special_chars:
-        text = text.replace(char, '\\' + char)
-    return text
 
 def send_telegram_notification():
     """Read vulnerability report and send Telegram notification"""
@@ -48,14 +37,14 @@ def send_telegram_notification():
         
         if vulnerabilities:
             # Message for vulnerabilities found
-            message = f"🚨 *VULNERABILIDADES DETECTADAS* 🚨\n\n"
-            message += f"📊 *Resumen:*\n"
+            message = "🚨 <b>VULNERABILIDADES DETECTADAS</b> 🚨\n\n"
+            message += "📊 <b>Resumen:</b>\n"
             message += f"• Total: {len(vulnerabilities)} vulnerabilidades\n"
             message += f"• Críticas: {summary.get('critical', 0)}\n"
             message += f"• Altas: {summary.get('high', 0)}\n"
             message += f"• Medias: {summary.get('medium', 0)}\n"
             message += f"• Bajas: {summary.get('low', 0)}\n\n"
-            message += f"🔍 *Top 5 vulnerabilidades:*\n"
+            message += "🔍 <b>Top 5 vulnerabilidades:</b>\n"
             
             for i, vuln in enumerate(vulnerabilities[:5], 1):
                 file_path = vuln.get('file', 'unknown').split('/')[-1]
@@ -63,31 +52,31 @@ def send_telegram_notification():
                 vuln_type = vuln.get('type', 'Unknown')
                 confidence = vuln.get('confidence', 0)
                 
-                message += f"\n{i}. *{escape_markdown(vuln_type)}* \\({confidence*100:.0f}%\\)\n"
-                message += f"   📄 `{escape_markdown(file_path)}:{line}`"
+                message += f"\n{i}. <b>{vuln_type}</b> ({confidence*100:.0f}%)\n"
+                message += f"   📄 <code>{file_path}:{line}</code>"
             
-            message += f"\n\n"
-            message += f"👤 Usuario: `{escape_markdown(commit_author)}`\n"
-            message += f"💬 Commit: `{escape_markdown(commit_message)}`\n"
-            message += f"⏰ Hora: `{readable_time}`\n"
-            message += f"🔗 Repo: `elkinpabon/CI\\-CD\\-Tests`"
+            message += "\n\n"
+            message += f"👤 Usuario: <code>{commit_author}</code>\n"
+            message += f"💬 Commit: <code>{commit_message}</code>\n"
+            message += f"⏰ Hora: <code>{readable_time}</code>\n"
+            message += "🔗 Repo: <code>elkinpabon/CI-CD-Tests</code>"
         else:
             # Message when no vulnerabilities found
-            message = f"✅ *SIN VULNERABILIDADES DETECTADAS* ✅\n\n"
-            message += f"📊 *Análisis completado exitosamente*\n\n"
+            message = "✅ <b>SIN VULNERABILIDADES DETECTADAS</b> ✅\n\n"
+            message += "📊 <b>Análisis completado exitosamente</b>\n\n"
             message += f"Archivos escaneados: {report.get('files_scanned', 0)}\n"
-            message += f"Vulnerabilidades encontradas: 0\n\n"
-            message += f"👤 Usuario: `{escape_markdown(commit_author)}`\n"
-            message += f"💬 Commit: `{escape_markdown(commit_message)}`\n"
-            message += f"⏰ Hora: `{readable_time}`\n"
-            message += f"🔗 Repo: `elkinpabon/CI\\-CD\\-Tests`"
+            message += "Vulnerabilidades encontradas: 0\n\n"
+            message += f"👤 Usuario: <code>{commit_author}</code>\n"
+            message += f"💬 Commit: <code>{commit_message}</code>\n"
+            message += f"⏰ Hora: <code>{readable_time}</code>\n"
+            message += "🔗 Repo: <code>elkinpabon/CI-CD-Tests</code>"
         
         # Send to Telegram
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
         payload = {
             'chat_id': chat_id,
             'text': message,
-            'parse_mode': 'MarkdownV2'
+            'parse_mode': 'HTML'
         }
         
         response = requests.post(url, json=payload, timeout=10)
