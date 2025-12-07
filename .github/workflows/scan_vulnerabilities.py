@@ -81,6 +81,71 @@ class VulnerabilityScanner:
             print(f"❌ Error cargando modelos: {e}")
             print("⚠️ Continuando sin modelos (modo offline)")
     
+    def _map_cwe_description_to_type(self, description: str) -> str:
+        """Mapear descripción CWE a tipo simple"""
+        desc_lower = description.lower()
+        
+        # Mapeos de palabras clave a tipos simples
+        if 'command injection' in desc_lower or 'exec' in desc_lower or 'system' in desc_lower:
+            return "Command Injection"
+        elif 'sql' in desc_lower or 'sql injection' in desc_lower:
+            return "SQL Injection"
+        elif 'cross-site' in desc_lower or 'xss' in desc_lower or 'html' in desc_lower or 'innerhtml' in desc_lower:
+            return "Cross-Site Scripting (XSS)"
+        elif 'buffer overflow' in desc_lower or 'strcpy' in desc_lower or 'memory' in desc_lower:
+            return "Buffer Overflow"
+        elif 'eval' in desc_lower or 'code execution' in desc_lower or 'remote code' in desc_lower:
+            return "Code Injection"
+        elif 'path traversal' in desc_lower or 'directory traversal' in desc_lower:
+            return "Path Traversal"
+        elif 'deserialization' in desc_lower or 'serialization' in desc_lower:
+            return "Deserialization"
+        elif 'race condition' in desc_lower:
+            return "Race Condition"
+        elif 'timing attack' in desc_lower:
+            return "Timing Attack"
+        elif 'exception' in desc_lower or 'error' in desc_lower:
+            return "Improper Error Handling"
+        elif 'cast' in desc_lower or 'optional' in desc_lower:
+            return "Type Safety Issue"
+        elif 'unsafe' in desc_lower or 'unwrap' in desc_lower:
+            return "Memory Safety"
+        else:
+            return "Unknown Vulnerability"
+    
+    def _detect_vulnerability_type(self, code_snippet: str, language: str) -> str:
+        """Detectar tipo de vulnerabilidad por patrones"""
+        code_lower = code_snippet.lower()
+        
+        # SQL Injection patterns
+        if any(pat in code_lower for pat in ['select', 'insert', 'update', 'delete', 'where', 'from']):
+            if any(pat in code_lower for pat in ['+', '{}', '\"', '\'', 'f\"', 'f\'']):
+                return "SQL Injection"
+        
+        # Command Injection
+        if any(pat in code_lower for pat in ['exec', 'system', 'subprocess', 'child_process', 'popen', 'shell=true']):
+            return "Command Injection"
+        
+        # Code Injection / Code Execution
+        if any(pat in code_lower for pat in ['eval(', 'exec(', 'compile(', 'new function']):
+            return "Code Injection"
+        
+        # Buffer Overflow
+        if any(pat in code_lower for pat in ['strcpy', 'strcat', 'sprintf', 'gets(', 'scanf']):
+            return "Buffer Overflow"
+        
+        # XSS / DOM-based vulnerabilities
+        if any(pat in code_lower for pat in ['innerhtml', 'textcontent', 'outerhtml', '<script', 'document.write']):
+            return "Cross-Site Scripting (XSS)"
+        
+        # Path Traversal
+        if any(pat in code_lower for pat in ['../', '..\\', '../.', 'path', 'file', 'directory']):
+            if 'user' in code_lower or 'input' in code_lower:
+                return "Path Traversal"
+        
+        # Default
+        return "Security Vulnerability"
+    
     def _detect_language(self, file_path: str) -> str:
         """Detectar lenguaje programación por extensión"""
         ext_to_lang = {
@@ -193,23 +258,9 @@ class VulnerabilityScanner:
                 vuln_confidence = confidence[is_vulnerable] if is_vulnerable == 1 else 1 - confidence[1]
                 
                 if is_vulnerable == 1 and vuln_confidence > 0.5:
-                    # Clasificar tipo CWE si está disponible
-                    cwe_type = "Unknown"
-                    cwe_confidence = 0.0
-                    
-                    if self.cwe_model and self.vectorizer_cwe and self.cwe_encoder:
-                        try:
-                            features_cwe = self.vectorizer_cwe.transform([code_snippet])
-                            features_cwe_array = np.column_stack([
-                                features_cwe.toarray(),
-                                np.array([[lang_encoded]])
-                            ])
-                            cwe_pred = self.cwe_model.predict(features_cwe_array)[0]
-                            cwe_proba = self.cwe_model.predict_proba(features_cwe_array)[0]
-                            cwe_type = self.cwe_encoder.inverse_transform([cwe_pred])[0]
-                            cwe_confidence = cwe_proba[cwe_pred]
-                        except Exception as e:
-                            print(f"  ⚠️ Error clasificando CWE: {e}")
+                    # Detectar tipo de vulnerabilidad por patrones regex
+                    cwe_type = self._detect_vulnerability_type(code_snippet, language)
+                    cwe_confidence = vuln_confidence  # Usar confianza del detector
                     
                     vulnerability = {
                         'file': file_path,
