@@ -4,8 +4,18 @@ import json
 import os
 import sys
 import requests
-from urllib.parse import quote
 from datetime import datetime
+import re
+
+def escape_markdown(text):
+    """Escape special markdown characters for Telegram"""
+    if not text:
+        return ""
+    # Escape markdown special characters
+    special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+    for char in special_chars:
+        text = text.replace(char, '\\' + char)
+    return text
 
 def send_telegram_notification():
     """Read vulnerability report and send Telegram notification"""
@@ -38,17 +48,14 @@ def send_telegram_notification():
         
         if vulnerabilities:
             # Message for vulnerabilities found
-            message = f"""🚨 *VULNERABILIDADES DETECTADAS* 🚨
-
-📊 *Resumen:*
-• Total: {len(vulnerabilities)} vulnerabilidades
-• Críticas: {summary.get('critical', 0)}
-• Altas: {summary.get('high', 0)}
-• Medias: {summary.get('medium', 0)}
-• Bajas: {summary.get('low', 0)}
-
-🔍 *Top 5 vulnerabilidades:*
-"""
+            message = f"🚨 *VULNERABILIDADES DETECTADAS* 🚨\n\n"
+            message += f"📊 *Resumen:*\n"
+            message += f"• Total: {len(vulnerabilities)} vulnerabilidades\n"
+            message += f"• Críticas: {summary.get('critical', 0)}\n"
+            message += f"• Altas: {summary.get('high', 0)}\n"
+            message += f"• Medias: {summary.get('medium', 0)}\n"
+            message += f"• Bajas: {summary.get('low', 0)}\n\n"
+            message += f"🔍 *Top 5 vulnerabilidades:*\n"
             
             for i, vuln in enumerate(vulnerabilities[:5], 1):
                 file_path = vuln.get('file', 'unknown').split('/')[-1]
@@ -56,34 +63,31 @@ def send_telegram_notification():
                 vuln_type = vuln.get('type', 'Unknown')
                 confidence = vuln.get('confidence', 0)
                 
-                message += f"\n{i}. *{vuln_type}* ({confidence*100:.0f}%)\n"
-                message += f"   📄 {file_path}:{line}"
+                message += f"\n{i}. *{escape_markdown(vuln_type)}* \\({confidence*100:.0f}%\\)\n"
+                message += f"   📄 `{escape_markdown(file_path)}:{line}`"
             
-            message += f"\n\n" \
-                      f"👤 Usuario: `{commit_author}`\n" \
-                      f"💬 Commit: `{commit_message}`\n" \
-                      f"⏰ Hora: `{readable_time}`\n" \
-                      f"🔗 Repo: `elkinpabon/CI-CD-Tests`"
+            message += f"\n\n"
+            message += f"👤 Usuario: `{escape_markdown(commit_author)}`\n"
+            message += f"💬 Commit: `{escape_markdown(commit_message)}`\n"
+            message += f"⏰ Hora: `{readable_time}`\n"
+            message += f"🔗 Repo: `elkinpabon/CI\\-CD\\-Tests`"
         else:
             # Message when no vulnerabilities found
-            message = f"""✅ *SIN VULNERABILIDADES DETECTADAS* ✅
-
-📊 *Análisis completado exitosamente*
-
-Archivos escaneados: {report.get('files_scanned', 0)}
-Vulnerabilidades encontradas: 0
-
-👤 Usuario: `{commit_author}`
-💬 Commit: `{commit_message}`
-⏰ Hora: `{readable_time}`
-🔗 Repo: `elkinpabon/CI-CD-Tests`"""
+            message = f"✅ *SIN VULNERABILIDADES DETECTADAS* ✅\n\n"
+            message += f"📊 *Análisis completado exitosamente*\n\n"
+            message += f"Archivos escaneados: {report.get('files_scanned', 0)}\n"
+            message += f"Vulnerabilidades encontradas: 0\n\n"
+            message += f"👤 Usuario: `{escape_markdown(commit_author)}`\n"
+            message += f"💬 Commit: `{escape_markdown(commit_message)}`\n"
+            message += f"⏰ Hora: `{readable_time}`\n"
+            message += f"🔗 Repo: `elkinpabon/CI\\-CD\\-Tests`"
         
         # Send to Telegram
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
         payload = {
             'chat_id': chat_id,
             'text': message,
-            'parse_mode': 'Markdown'
+            'parse_mode': 'MarkdownV2'
         }
         
         response = requests.post(url, json=payload, timeout=10)
