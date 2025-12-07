@@ -1,4 +1,4 @@
-"""Archivo con vulnerabilidades intencionales para prueba"""
+"""Archivo con vulnerabilidades intencionales para prueba de Telegram"""
 
 # SQL Injection
 def get_user(user_id):
