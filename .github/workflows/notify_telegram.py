@@ -8,11 +8,11 @@ from datetime import datetime
 import re
 
 def escape_markdown(text):
-    """Escape special markdown characters for Telegram"""
+    """Escape special markdown characters for Telegram MarkdownV2"""
     if not text:
         return ""
-    # Escape markdown special characters
-    special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!']
+    # All characters that need escaping in MarkdownV2
+    special_chars = ['_', '*', '[', ']', '(', ')', '~', '`', '>', '#', '+', '-', '=', '|', '{', '}', '.', '!', '\\']
     for char in special_chars:
         text = text.replace(char, '\\' + char)
     return text
