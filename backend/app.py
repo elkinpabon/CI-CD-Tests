@@ -1,6 +1,7 @@
 """
 Vulnerability Detection API - Production
 Deteccion y clasificacion de vulnerabilidades en codigo fuente
+Version: 2.0 - Con notificaciones a Telegram
 """
 
 from flask import Flask, request, jsonify
