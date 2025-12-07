@@ -2,6 +2,7 @@
 """
 Vulnerability Detection Scanner - GitHub Actions Integration
 Escanea archivos de código en busca de vulnerabilidades usando modelos ML
+Versión: 2.0 - Detección y clasificación mejorada
 """
 
 import os
