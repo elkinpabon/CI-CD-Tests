@@ -5,6 +5,7 @@ import os
 import sys
 import requests
 from urllib.parse import quote
+from datetime import datetime
 
 def send_telegram_notification():
     """Read vulnerability report and send Telegram notification"""
@@ -21,14 +22,23 @@ def send_telegram_notification():
             report = json.load(f)
         
         vulnerabilities = report.get('vulnerabilities', [])
-        
-        if not vulnerabilities:
-            print('✅ No vulnerabilities to notify')
-            return True
-        
-        # Build message
         summary = report.get('summary', {})
-        message = f"""🚨 *VULNERABILIDADES DETECTADAS* 🚨
+        timestamp = report.get('timestamp', '')
+        
+        # Get commit info from GitHub Actions environment
+        commit_message = os.getenv('GITHUB_COMMIT_MESSAGE', 'Unknown')
+        commit_author = os.getenv('GITHUB_ACTOR', 'Unknown')
+        
+        # Parse timestamp to readable format
+        try:
+            dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            readable_time = dt.strftime('%d/%m/%Y %H:%M:%S')
+        except:
+            readable_time = timestamp
+        
+        if vulnerabilities:
+            # Message for vulnerabilities found
+            message = f"""🚨 *VULNERABILIDADES DETECTADAS* 🚨
 
 📊 *Resumen:*
 • Total: {len(vulnerabilities)} vulnerabilidades
@@ -39,18 +49,34 @@ def send_telegram_notification():
 
 🔍 *Top 5 vulnerabilidades:*
 """
-        
-        for i, vuln in enumerate(vulnerabilities[:5], 1):
-            file_path = vuln.get('file', 'unknown').split('/')[-1]
-            line = vuln.get('line', '?')
-            vuln_type = vuln.get('type', 'Unknown')
-            confidence = vuln.get('confidence', 0)
             
-            message += f"\n{i}. *{vuln_type}* ({confidence*100:.0f}%)\n"
-            message += f"   📄 {file_path}:{line}"
-        
-        message += f"\n\n🔗 Repositorio: elkinpabon/CI-CD-Tests"
-        message += f"\n⏰ Fecha: {report.get('timestamp', 'unknown')}"
+            for i, vuln in enumerate(vulnerabilities[:5], 1):
+                file_path = vuln.get('file', 'unknown').split('/')[-1]
+                line = vuln.get('line', '?')
+                vuln_type = vuln.get('type', 'Unknown')
+                confidence = vuln.get('confidence', 0)
+                
+                message += f"\n{i}. *{vuln_type}* ({confidence*100:.0f}%)\n"
+                message += f"   📄 {file_path}:{line}"
+            
+            message += f"\n\n" \
+                      f"👤 Usuario: `{commit_author}`\n" \
+                      f"💬 Commit: `{commit_message}`\n" \
+                      f"⏰ Hora: `{readable_time}`\n" \
+                      f"🔗 Repo: `elkinpabon/CI-CD-Tests`"
+        else:
+            # Message when no vulnerabilities found
+            message = f"""✅ *SIN VULNERABILIDADES DETECTADAS* ✅
+
+📊 *Análisis completado exitosamente*
+
+Archivos escaneados: {report.get('files_scanned', 0)}
+Vulnerabilidades encontradas: 0
+
+👤 Usuario: `{commit_author}`
+💬 Commit: `{commit_message}`
+⏰ Hora: `{readable_time}`
+🔗 Repo: `elkinpabon/CI-CD-Tests`"""
         
         # Send to Telegram
         url = f"https://api.telegram.org/bot{bot_token}/sendMessage"
